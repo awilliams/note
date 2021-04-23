@@ -1,0 +1,88 @@
+# github.com/alecthomas/chroma v0.8.2
+github.com/alecthomas/chroma
+github.com/alecthomas/chroma/formatters
+github.com/alecthomas/chroma/formatters/html
+github.com/alecthomas/chroma/formatters/svg
+github.com/alecthomas/chroma/lexers
+github.com/alecthomas/chroma/lexers/a
+github.com/alecthomas/chroma/lexers/b
+github.com/alecthomas/chroma/lexers/c
+github.com/alecthomas/chroma/lexers/circular
+github.com/alecthomas/chroma/lexers/d
+github.com/alecthomas/chroma/lexers/e
+github.com/alecthomas/chroma/lexers/f
+github.com/alecthomas/chroma/lexers/g
+github.com/alecthomas/chroma/lexers/h
+github.com/alecthomas/chroma/lexers/i
+github.com/alecthomas/chroma/lexers/internal
+github.com/alecthomas/chroma/lexers/j
+github.com/alecthomas/chroma/lexers/k
+github.com/alecthomas/chroma/lexers/l
+github.com/alecthomas/chroma/lexers/m
+github.com/alecthomas/chroma/lexers/n
+github.com/alecthomas/chroma/lexers/o
+github.com/alecthomas/chroma/lexers/p
+github.com/alecthomas/chroma/lexers/q
+github.com/alecthomas/chroma/lexers/r
+github.com/alecthomas/chroma/lexers/s
+github.com/alecthomas/chroma/lexers/t
+github.com/alecthomas/chroma/lexers/v
+github.com/alecthomas/chroma/lexers/w
+github.com/alecthomas/chroma/lexers/x
+github.com/alecthomas/chroma/lexers/y
+github.com/alecthomas/chroma/lexers/z
+github.com/alecthomas/chroma/quick
+github.com/alecthomas/chroma/styles
+# github.com/aymerick/douceur v0.2.0
+github.com/aymerick/douceur/css
+github.com/aymerick/douceur/parser
+# github.com/charmbracelet/glamour v0.3.0
+## explicit
+github.com/charmbracelet/glamour
+github.com/charmbracelet/glamour/ansi
+# github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
+github.com/danwakefield/fnmatch
+# github.com/dlclark/regexp2 v1.2.0
+github.com/dlclark/regexp2
+github.com/dlclark/regexp2/syntax
+# github.com/gorilla/css v1.0.0
+github.com/gorilla/css/scanner
+# github.com/lucasb-eyer/go-colorful v1.2.0
+github.com/lucasb-eyer/go-colorful
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.10
+github.com/mattn/go-runewidth
+# github.com/microcosm-cc/bluemonday v1.0.6
+github.com/microcosm-cc/bluemonday
+# github.com/muesli/reflow v0.2.0
+github.com/muesli/reflow/ansi
+github.com/muesli/reflow/indent
+github.com/muesli/reflow/padding
+github.com/muesli/reflow/wordwrap
+# github.com/muesli/termenv v0.8.1
+github.com/muesli/termenv
+# github.com/olekukonko/tablewriter v0.0.5
+github.com/olekukonko/tablewriter
+# github.com/rivo/uniseg v0.1.0
+github.com/rivo/uniseg
+# github.com/yuin/goldmark v1.3.3
+github.com/yuin/goldmark
+github.com/yuin/goldmark/ast
+github.com/yuin/goldmark/extension
+github.com/yuin/goldmark/extension/ast
+github.com/yuin/goldmark/parser
+github.com/yuin/goldmark/renderer
+github.com/yuin/goldmark/renderer/html
+github.com/yuin/goldmark/text
+github.com/yuin/goldmark/util
+# github.com/yuin/goldmark-emoji v1.0.1
+github.com/yuin/goldmark-emoji
+github.com/yuin/goldmark-emoji/ast
+github.com/yuin/goldmark-emoji/definition
+# golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20210330210617-4fbd30eecc44
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
