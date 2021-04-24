@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/ansi"
 )
 
 //go:embed README.md
@@ -23,6 +24,7 @@ type config struct {
 	baseDir    string
 	editor     string
 	version    bool
+	names      bool
 }
 
 var errFullHelp = errors.New("fullHelp")
@@ -47,6 +49,7 @@ func (c *config) parse(args []string) error {
 	fs := flag.NewFlagSet("note", flag.ContinueOnError)
 	fs.StringVar(&c.baseDir, "d", c.baseDir, "Root directory of note files")
 	fs.StringVar(&c.editor, "e", c.editor, "Editor executable ($EDITOR)")
+	fs.BoolVar(&c.names, "n", c.names, "Print path(s) to notes")
 	fs.BoolVar(&c.version, "v", c.version, "Print version information")
 	fs.BoolVar(&help, "help", help, "Print README in addition to standard help (-h) information")
 
@@ -108,7 +111,7 @@ func (c *config) parse(args []string) error {
 	appendUsage := func() {
 		fmt.Fprintf(&eb, "Usage: %s [OFFSET] [OPTIONS]\n", exeName)
 		fmt.Fprintln(&eb, `OFFSET:
-  open note file OFFSET number of weeks relative to now. Example: -2 (two weeks ago); +1 (next week)
+  open note file OFFSET number of weeks relative to now. Example: -2 (two weeks ago), +1 (next week)
 
 OPTIONS:`)
 		defaults.WriteTo(&eb)
@@ -120,11 +123,23 @@ OPTIONS:`)
 	case errFullHelp:
 		appendUsage()
 
+		style := glamour.ASCIIStyleConfig
+		// Style links as "text (href)".
+		style.Link = ansi.StylePrimitive{
+			BlockPrefix: "(",
+			BlockSuffix: ")",
+		}
+		// Do not adding leading & trailing linebreaks.
+		style.Document.BlockPrefix = ""
+		style.Document.BlockSuffix = ""
+
 		r, _ := glamour.NewTermRenderer(
 			// ASCII output (no escape sequences).
-			glamour.WithStyles(glamour.ASCIIStyleConfig),
-			// Wrap output to 80 chars.
-			glamour.WithWordWrap(80),
+			glamour.WithStyles(style),
+			// Limit line length.
+			glamour.WithWordWrap(100),
+			// Allow relative links to work properly.
+			glamour.WithBaseURL("https://github.com/awilliams/note/blob/main/"),
 		)
 		md, _ := r.Render(readme)
 		fmt.Fprintln(&eb, "\nREADME")

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	_ "embed"
 	"fmt"
 	"io"
 	"os"
@@ -17,6 +18,9 @@ const (
 	week = 7 * day
 )
 
+//go:embed VERSION
+var version string
+
 func main() {
 	var cfg config
 	if err := cfg.parse(os.Args); err != nil {
@@ -24,9 +28,21 @@ func main() {
 		return
 	}
 
+	if cfg.version {
+		v := version
+		if v == "" {
+			v = "DEV"
+		} else {
+			v = "v" + v
+		}
+		fmt.Print(v)
+		return
+	}
+
 	a := app{
 		date:       time.Now().Add(time.Duration(cfg.weekOffset) * week),
 		weekOffset: cfg.weekOffset,
+		names:      cfg.names,
 		baseDir:    cfg.baseDir,
 		editor:     cfg.editor,
 	}
@@ -38,6 +54,7 @@ func main() {
 type app struct {
 	date       time.Time
 	weekOffset int
+	names      bool
 	baseDir    string
 	editor     string
 }
@@ -47,8 +64,12 @@ func (a *app) run() error {
 	notePath := filepath.Join(
 		a.baseDir,
 		strconv.Itoa(year),
-		fmt.Sprintf("%s.md", strconv.Itoa(week)),
+		fmt.Sprintf("%02d.md", week),
 	)
+	if a.names {
+		fmt.Println(notePath)
+		return nil
+	}
 
 	if err := a.createNote(notePath); err != nil {
 		return nil
@@ -82,19 +103,20 @@ func (a *app) curLine(notePath string) int {
 		// don't open to a particular line.
 		return 0
 	}
+
 	fd, err := os.Open(notePath)
 	if err != nil {
 		return 0
 	}
 	defer fd.Close()
 
-	nextHeader := a.formatDate(a.date.Add(day))
+	nextHeader := a.heading(a.date.Add(day))
 	var line int
 
 	s := bufio.NewScanner(fd)
 	for s.Scan() {
 		line++
-		if strings.TrimSpace(s.Text()) == nextHeader {
+		if strings.HasPrefix(s.Text(), nextHeader) {
 			return line - 1
 		}
 	}
@@ -116,9 +138,11 @@ func (a *app) createNote(notePath string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
+		// File does not exist.
 		writeTemplate = true
 	} else {
 		exists = true
+		// Only update empty files with template.
 		writeTemplate = s.Size() == 0
 	}
 
@@ -143,7 +167,7 @@ func (a *app) writeTemplate(w io.Writer) error {
 	monday := a.date.Add(time.Duration(time.Monday-a.date.Weekday()) * day)
 	for d := time.Duration(0); d < 5; d++ {
 		day := monday.Add(d * day)
-		if _, err := fmt.Fprintf(w, "%s\n\n", a.formatDate(day)); err != nil {
+		if _, err := fmt.Fprintf(w, "%s\n\n", a.heading(day)); err != nil {
 			return err
 		}
 	}
@@ -151,6 +175,6 @@ func (a *app) writeTemplate(w io.Writer) error {
 	return nil
 }
 
-func (a *app) formatDate(t time.Time) string {
+func (a *app) heading(t time.Time) string {
 	return t.Local().Format("### Monday, 02-January-2006")
 }
