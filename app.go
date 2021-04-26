@@ -25,15 +25,15 @@ func (a *app) run() error {
 
 	n := newNote(a.baseDir, r)
 
-	if a.names {
+	switch {
+	case a.names:
 		fmt.Println(n.path)
 		return nil
-	}
 
-	if a.print {
+	case a.print:
 		return n.print(os.Stdout)
-	}
-	if a.printMD {
+
+	case a.printMD:
 		r, err := glamour.NewTermRenderer(
 			glamour.WithAutoStyle(),
 			// Limit line length.
@@ -57,6 +57,8 @@ func (a *app) run() error {
 		_, err = io.Copy(os.Stdout, bytes.NewReader(md))
 		return err
 	}
+
+	// Default is to edit the node.
 
 	if err := n.create(); err != nil {
 		return nil
