@@ -70,6 +70,8 @@ func (a *app) editNote(n *note) error {
 
 	switch filepath.Base(a.editor) {
 	case "vim", "nvim":
+		// Start in 'insert' mode.
+		args = append(args, "+startinsert")
 		// Instruct (n)vim to open file and position cursor at given line.
 		if a.weekOffset == 0 {
 			line, err := n.rangeCursorLine()
