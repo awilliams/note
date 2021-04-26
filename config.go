@@ -25,6 +25,8 @@ type config struct {
 	editor     string
 	version    bool
 	names      bool
+	print      bool
+	printMD    bool
 }
 
 var errFullHelp = errors.New("fullHelp")
@@ -50,6 +52,8 @@ func (c *config) parse(args []string) error {
 	fs.StringVar(&c.baseDir, "d", c.baseDir, "Root directory of note files")
 	fs.StringVar(&c.editor, "e", c.editor, "Editor executable ($EDITOR)")
 	fs.BoolVar(&c.names, "n", c.names, "Print path(s) to notes")
+	fs.BoolVar(&c.print, "p", c.print, "Print note to STDOUT")
+	fs.BoolVar(&c.printMD, "P", c.printMD, "Print note to STDOUT with Markdown formatting")
 	fs.BoolVar(&c.version, "v", c.version, "Print version information")
 	fs.BoolVar(&help, "help", help, "Print README in addition to standard help (-h) information")
 
@@ -76,7 +80,7 @@ func (c *config) parse(args []string) error {
 				default:
 					// TODO: Allow for absoulte weeks, e.g '23' = week 23,
 					// in addition to relative offsets.
-					return fmt.Errorf("unable to parse offset value %q", farg)
+					return fmt.Errorf("unable to parse offset value %q, must start with either '-' or '+'", farg)
 				}
 
 				v, err := strconv.Atoi(matches[2])
