@@ -4,6 +4,7 @@ use chrono::prelude::*;
 use chrono::Duration;
 
 pub struct Days {
+    pub year: i32,
     pub week_num: u32,
     pub days: Vec<Date<Local>>,
 }
@@ -18,8 +19,10 @@ impl Days {
             days.push(monday + Duration::days(i));
         }
 
+        let iso_week = monday.iso_week();
         Self {
-            week_num: monday.iso_week().week(),
+            year: iso_week.year(),
+            week_num: iso_week.week(),
             days: days,
         }
     }

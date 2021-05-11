@@ -1,11 +1,15 @@
-use clap::{App, AppSettings, Arg};
+use std::env;
 use std::ffi::OsString;
+
+use clap::{App, AppSettings, Arg};
 
 #[derive(Debug)]
 pub struct CLI {
     pub exe_name: String,
     pub week_offset: i64,
-    pub print: bool,
+    pub editor: String,
+    pub print_md: bool,
+    pub print_path: bool,
 }
 
 impl CLI {
@@ -14,6 +18,11 @@ impl CLI {
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
     {
+        let default_editor = match env::var("EDITOR") {
+            Ok(v) => v,
+            Err(_) => "".to_string(),
+        };
+
         let mut app = App::new("note")
             .version("0.1.0")
             .about("weekly note manager")
@@ -28,11 +37,25 @@ impl CLI {
                     .index(1),
             )
             .arg(
+                Arg::with_name("editor")
+                    .short("e")
+                    .long("editor")
+                    .takes_value(true)
+                    .default_value(&default_editor)
+                    .help("Editor executable; default is $EDITOR"),
+            )
+            .arg(
                 Arg::with_name("print")
                     .short("p")
                     .long("print")
                     .takes_value(false)
                     .help("Print note to STDOUT"),
+            )
+            .arg(
+                Arg::with_name("n")
+                    .short("n")
+                    .takes_value(false)
+                    .help("Print path to note"),
             );
 
         // Retain 'app' in order to get the binary name.
@@ -54,7 +77,6 @@ impl CLI {
 
         let cli = CLI {
             exe_name: app.get_bin_name().unwrap_or("note").to_string(),
-            print: arg_matches.is_present("print"),
             week_offset: match arg_matches.value_of("OFFSET") {
                 Some(v) => match v.parse::<i64>() {
                     Ok(i) => i,
@@ -66,6 +88,12 @@ impl CLI {
                 },
                 None => return Result::Err(err_msg("OFFSET must be set")),
             },
+            editor: match arg_matches.value_of("editor") {
+                Some(v) => v.to_string(),
+                None => return Result::Err(err_msg("editor must be set")),
+            },
+            print_md: arg_matches.is_present("print"),
+            print_path: arg_matches.is_present("n"),
         };
 
         Result::Ok(cli)
