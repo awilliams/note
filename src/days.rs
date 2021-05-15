@@ -1,45 +1,85 @@
-use std::slice::Iter;
+use std::iter::Iterator;
 
-use chrono::prelude::*;
 use chrono::Duration;
+use chrono::{prelude::*, IsoWeek};
 
-pub struct Days {
-    pub year: i32,
-    pub week_num: u32,
-    pub days: Vec<Date<Local>>,
+pub struct DayRange {
+    first: Date<Local>,
+    iso_week: IsoWeek,
 }
 
-impl Days {
-    pub fn from_offset(week_offset: i64) -> Self {
-        let monday = Self::monday(week_offset);
+impl DayRange {
+    pub fn from_monday(rel_week_offset: i64) -> Self {
+        let monday = Self::monday(rel_week_offset);
+        Self::from(monday)
+    }
 
-        let mut days = Vec::with_capacity(5);
-        days.push(monday);
-        for i in 1..=4 {
-            days.push(monday + Duration::days(i));
-        }
-
-        let iso_week = monday.iso_week();
+    pub fn from(first: Date<Local>) -> Self {
         Self {
-            year: iso_week.year(),
-            week_num: iso_week.week(),
+            first: first,
+            iso_week: first.iso_week(),
+        }
+    }
+
+    fn monday(rel_week_offset: i64) -> Date<Local> {
+        let today: Date<Local> = Local::today();
+        let monday_offset = Duration::days(1 - today.weekday().num_days_from_sunday() as i64);
+        let offset = monday_offset + Duration::weeks(rel_week_offset);
+        today + offset
+    }
+
+    pub fn range(&self, num_days: i64) -> DayRangeIterator {
+        DayRangeIterator::new(self.first, num_days)
+    }
+
+    pub fn week_num(&self) -> u32 {
+        self.iso_week.week()
+    }
+
+    pub fn year(&self) -> i32 {
+        return self.iso_week.year();
+    }
+}
+
+pub struct DayRangeIterator {
+    first: Date<Local>,
+    days: i64,
+}
+
+impl DayRangeIterator {
+    fn new(first: Date<Local>, days: i64) -> Self {
+        DayRangeIterator {
+            first: first,
             days: days,
         }
     }
+}
 
-    fn monday(week_offset: i64) -> Date<Local> {
-        let today: Date<Local> = Local::today();
-        let monday_offset = Duration::days(1 - today.weekday().num_days_from_sunday() as i64);
-        let offset = monday_offset + Duration::weeks(week_offset);
-        today + offset
+impl Iterator for DayRangeIterator {
+    type Item = Date<Local>;
+    fn next(&mut self) -> Option<Date<Local>> {
+        if self.days <= 0 {
+            return None;
+        }
+        let ret = self.first;
+        self.first = self.first + Duration::days(1);
+        self.days -= 1;
+        Some(ret)
     }
 }
 
-impl<'a> IntoIterator for &'a Days {
-    type Item = &'a Date<Local>;
-    type IntoIter = Iter<'a, Date<Local>>;
+#[test]
+fn test_day_range() {
+    let n = 5;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.days.iter()
+    let r = DayRange::from(Local.ymd(2021, 10, 10));
+    assert_eq!(r.week_num(), 40);
+    assert_eq!(r.year(), 2021);
+
+    let days: Vec<Date<Local>> = r.range(n).collect();
+    assert_eq!(days.len(), n as usize);
+
+    for i in 0..n {
+        assert_eq!(days[i as usize], Local.ymd(2021, 10, 10 + i as u32));
     }
 }
