@@ -1,12 +1,14 @@
 mod cli;
-mod days;
+mod day_range;
+mod md;
 
 use cli::CLI;
-use days::DayRange;
+use day_range::DayRange;
+use md::print_anscii_md;
 
 use std::env;
 use std::fs;
-use std::io::Write;
+use std::io::{self, Write};
 use std::process;
 
 use home;
@@ -16,28 +18,27 @@ fn main() {
         bail(&e);
     });
 
-    if args.print_md {
-        bail("print not yet implemented!");
-    }
-
     let date_range = DayRange::from_monday(args.week_offset);
 
-    let p = match home::home_dir() {
-        Some(mut p) => {
-            p.push("TEST");
-            p.push(args.exe_name);
-            p.push(date_range.year().to_string());
-            p.push(format!("{}.md", date_range.week_num()));
-            p
-        }
-        None => {
-            bail("unable to determine $HOME directory");
-        }
-    };
-    let note_path = p.as_path();
+    let mut note_path =
+        home::home_dir().unwrap_or_else(|| bail("unable to determine $HOME directory"));
+    note_path.push("TEST");
+    note_path.push(args.exe_name);
+    note_path.push(date_range.year().to_string());
+    note_path.push(format!("{}.md", date_range.week_num()));
+    let note_path = note_path.as_path();
 
     if args.print_path {
         println!("{}", note_path.display());
+        return;
+    }
+
+    if args.print_md {
+        let note_contents = fs::read_to_string(note_path).unwrap_or_else(|e| bail(&e.to_string()));
+        let mut rendered = String::new();
+        let md =
+            print_anscii_md(&note_contents, &mut rendered).unwrap_or_else(|e| bail(&e.to_string()));
+        io::copy(&mut rendered.as_bytes(), &mut io::stdout());
         return;
     }
 
