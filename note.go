@@ -120,7 +120,7 @@ func (n *note) cursorLine(r io.Reader, date time.Time) (int, error) {
 }
 
 func (n *note) writeTemplate(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "# Week %02d, %d\n---\n\n", n.r.startWeek, n.r.startYear)
+	_, err := fmt.Fprintf(w, "# Week %02d, %d\n\n---\n\n", n.r.startWeek, n.r.startYear)
 	if err != nil {
 		return err
 	}
@@ -129,6 +129,10 @@ func (n *note) writeTemplate(w io.Writer) error {
 		if _, err := fmt.Fprintf(w, "%s\n\n", n.heading(day)); err != nil {
 			return err
 		}
+	}
+
+	if _, err := fmt.Fprintln(w, "---\n\nTODO:"); err != nil {
+		return err
 	}
 
 	return nil
