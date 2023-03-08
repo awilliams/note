@@ -12,21 +12,28 @@ import (
 	"time"
 )
 
-func newNote(baseDir string, r dateRange) *note {
-	p := filepath.Join(
+func notePath(baseDir string, r dateRange) string {
+	return filepath.Join(
 		baseDir,
 		strconv.Itoa(r.startYear),
 		fmt.Sprintf("%02d.md", r.startWeek),
 	)
+}
+
+func newNote(baseDir string, curRange, prevRange dateRange) *note {
 	return &note{
-		r:    r,
-		path: p,
+		curRange:  curRange,
+		prevRange: prevRange,
+		baseDir:   baseDir,
+		path:      notePath(baseDir, curRange),
 	}
 }
 
 type note struct {
-	r    dateRange
-	path string
+	curRange  dateRange
+	prevRange dateRange
+	baseDir   string
+	path      string
 }
 
 func (n *note) print(w io.Writer) error {
@@ -41,7 +48,7 @@ func (n *note) print(w io.Writer) error {
 }
 
 func (n *note) create() error {
-	if err := os.MkdirAll(filepath.Dir(n.path), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(n.path), 0o700); err != nil {
 		return err
 	}
 
@@ -71,13 +78,34 @@ func (n *note) create() error {
 	if !exists {
 		flags |= os.O_EXCL
 	}
-	fd, err := os.OpenFile(n.path, flags, 0700)
+	fd, err := os.OpenFile(n.path, flags, 0o700)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	return n.writeTemplate(fd)
+	// Read previous note's TODO section, if any.
+	var prevTODO string
+	prevFd, err := os.Open(notePath(n.baseDir, n.prevRange))
+	if err == nil {
+		s := bufio.NewScanner(prevFd)
+		var buf strings.Builder
+		var postTODO bool
+		for s.Scan() {
+			if strings.HasPrefix(s.Text(), "TODO:") {
+				postTODO = true
+				continue
+			}
+			if !postTODO {
+				continue
+			}
+			buf.Write(s.Bytes())
+			buf.WriteRune('\n')
+		}
+		prevTODO = buf.String()
+	}
+
+	return n.writeTemplate(fd, prevTODO)
 }
 
 func (n *note) rangeCursorLine() (int, error) {
@@ -87,7 +115,7 @@ func (n *note) rangeCursorLine() (int, error) {
 	}
 	defer fd.Close()
 
-	return n.cursorLine(fd, n.r.date)
+	return n.cursorLine(fd, n.curRange.date)
 }
 
 func (n *note) cursorLine(r io.Reader, date time.Time) (int, error) {
@@ -119,19 +147,19 @@ func (n *note) cursorLine(r io.Reader, date time.Time) (int, error) {
 	return 0, s.Err()
 }
 
-func (n *note) writeTemplate(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "# Week %02d, %d\n\n---\n\n", n.r.startWeek, n.r.startYear)
+func (n *note) writeTemplate(w io.Writer, prevTODO string) error {
+	_, err := fmt.Fprintf(w, "# Week %02d, %d\n\n---\n\n", n.curRange.startWeek, n.curRange.startYear)
 	if err != nil {
 		return err
 	}
 
-	for _, day := range n.r.days {
+	for _, day := range n.curRange.days {
 		if _, err := fmt.Fprintf(w, "%s\n\n", n.heading(day)); err != nil {
 			return err
 		}
 	}
 
-	if _, err := fmt.Fprintln(w, "---\n\nTODO:"); err != nil {
+	if _, err := fmt.Fprintf(w, "---\n\nTODO:%s\n", prevTODO); err != nil {
 		return err
 	}
 

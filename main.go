@@ -36,6 +36,7 @@ func main() {
 		editor:     cfg.editor,
 	}
 	if err := a.run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
 	}
 }

@@ -21,9 +21,10 @@ type app struct {
 }
 
 func (a *app) run() error {
-	r := relWorkWeek(a.weekOffset)
+	curRange := relWorkWeek(a.weekOffset)
+	prevRange := relWorkWeek(a.weekOffset - 1)
 
-	n := newNote(a.baseDir, r)
+	n := newNote(a.baseDir, curRange, prevRange)
 
 	switch {
 	case a.names:
@@ -46,7 +47,7 @@ func (a *app) run() error {
 		}
 
 		var buf bytes.Buffer
-		if err := n.print(&buf); err != nil {
+		if err = n.print(&buf); err != nil {
 			return err
 		}
 
@@ -58,7 +59,7 @@ func (a *app) run() error {
 		return err
 	}
 
-	// Default is to edit the node.
+	// Default is to edit the note.
 
 	if err := n.create(); err != nil {
 		return nil

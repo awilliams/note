@@ -185,6 +185,14 @@ func WithWordWrap(wordWrap int) TermRendererOption {
 	}
 }
 
+// WithPreservedNewlines preserves newlines from being replaced.
+func WithPreservedNewLines() TermRendererOption {
+	return func(tr *TermRenderer) error {
+		tr.ansiOptions.PreserveNewLines = true
+		return nil
+	}
+}
+
 // WithEmoji sets a TermRenderer's emoji rendering.
 func WithEmoji() TermRendererOption {
 	return func(tr *TermRenderer) error {
