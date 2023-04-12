@@ -159,7 +159,7 @@ func (n *note) writeTemplate(w io.Writer, prevTODO string) error {
 		}
 	}
 
-	if _, err := fmt.Fprintf(w, "---\n\nTODO:%s\n", prevTODO); err != nil {
+	if _, err := fmt.Fprintf(w, "---\n\nTODO:\n%s\n", prevTODO); err != nil {
 		return err
 	}
 
